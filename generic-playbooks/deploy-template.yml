@@ -1,0 +1,10 @@
+---
+- name: Deploy Dynamic Homepage
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Deploy homepage template
+      template:
+        src: ../templates/index.html.j2
+        dest: /var/www/html/index.html
