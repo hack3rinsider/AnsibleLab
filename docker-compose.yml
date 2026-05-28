@@ -6,10 +6,13 @@ services:
     hostname: controller
     tty: true
     stdin_open: true
+
     ports:
       - "3220:22"
+
     volumes:
       - ./controller:/ansible
+
     networks:
       - ansible-net
 
@@ -17,9 +20,11 @@ services:
     build: ./node
     container_name: web1
     hostname: web1
+
     ports:
       - "3221:22"
       - "8083:80"
+
     networks:
       - ansible-net
 
@@ -27,9 +32,11 @@ services:
     build: ./node
     container_name: web2
     hostname: web2
+
     ports:
       - "3222:22"
       - "8084:80"
+
     networks:
       - ansible-net
 
@@ -37,26 +44,31 @@ services:
     build: ./node
     container_name: web3
     hostname: web3
+
     ports:
       - "3223:22"
       - "8086:80"
+
     networks:
       - ansible-net
 
   db1:
-    image: postgres:16
+    build: ./db
     container_name: db1
     hostname: db1
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: bankingdb
-    command: >
-      postgres -c listen_addresses='*'
+
     ports:
       - "5432:5432"
+      - "3224:22"
+
     volumes:
-      - ./banking-demo/backend/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ../Banking-App/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
     networks:
       - ansible-net
 
@@ -64,15 +76,18 @@ services:
     build: ./node
     container_name: mon1
     hostname: mon1
+
     ports:
       - "3225:22"
       - "6565:6565"
+
     networks:
       - ansible-net
 
 networks:
   ansible-net:
     driver: bridge
+
     ipam:
       config:
-        - subnet: 100.64.10.0/24
+        - subnet: 10.77.77.0/24
