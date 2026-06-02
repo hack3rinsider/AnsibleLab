@@ -1,4 +1,4 @@
-# 🚀 AnsibleLab Infrastructure
+## 🚀 AnsibleLab Infrastructure
 
 A Docker + Ansible based DevOps lab to simulate real-world multi-node infrastructure setup (controller, web servers, database, monitoring).
 

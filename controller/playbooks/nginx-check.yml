@@ -1,0 +1,13 @@
+---
+- name: check nginx on web servers
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: check nginx version
+      shell: /usr/sbin/nginx -v
+      register: nginx_output
+
+    - name: print nginx output
+      debug:
+        var: nginx_output.stderr

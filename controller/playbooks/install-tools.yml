@@ -1,0 +1,15 @@
+---
+- name: install tools on web servers
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: install packages
+      apt:
+        name:
+          - htop
+          - curl
+          - nano
+          - tree
+        state: present
+        update_cache: yes

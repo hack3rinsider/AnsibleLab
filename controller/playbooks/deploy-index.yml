@@ -1,0 +1,14 @@
+---
+- name: Deploy custom index page
+  hosts: web
+  become: yes
+
+  tasks:
+
+    - name: Copy HTML file
+      copy:
+        src: ../files/index.html
+        dest: /var/www/html/index.html
+
+    - name: Restart nginx
+      shell: service nginx restart

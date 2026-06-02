@@ -1,0 +1,18 @@
+---
+- name: Conditional demo
+  hosts: all
+  become: yes
+
+  tasks:
+
+    - name: Install nginx only on web servers
+      apt:
+        name: nginx
+        state: present
+      when: "'web' in group_names"
+
+    - name: Install postgresql only on db server
+      apt:
+        name: postgresql
+        state: present
+      when: "'db' in group_names"
