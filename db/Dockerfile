@@ -26,5 +26,8 @@ RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \
 EXPOSE 22
 EXPOSE 5432
 
-CMD service postgresql start && \
+CMD sed -i "s/^#listen_addresses.*/listen_addresses = '*'/" /etc/postgresql/16/main/postgresql.conf && \
+    grep -q "host all all 0.0.0.0/0 trust" /etc/postgresql/16/main/pg_hba.conf || \
+    echo "host all all 0.0.0.0/0 trust" >> /etc/postgresql/16/main/pg_hba.conf && \
+    service postgresql start && \
     /usr/sbin/sshd -D
