@@ -23,9 +23,6 @@ RUN mkdir -p /var/run/sshd
 RUN echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \
     echo "PermitRootLogin no" >> /etc/ssh/sshd_config
 
-RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/*/main/postgresql.conf && \
-    echo "host all all 0.0.0.0/0 scram-sha-256" >> /etc/postgresql/*/main/pg_hba.conf
-
 EXPOSE 22
 EXPOSE 5432
 
