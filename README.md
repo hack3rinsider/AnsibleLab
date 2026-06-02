@@ -1,84 +1,213 @@
-## 🚀 AnsibleLab Infrastructure
+# 🚀 AnsibleLab Infrastructure
 
-A Docker + Ansible based DevOps lab to simulate real-world multi-node infrastructure setup (controller, web servers, database, monitoring).
-
----
-
-## 🧱 Architecture
-
-- 🧠 **controller** → Ansible control node (runs playbooks)
-- 🌐 **web1 / web2 / web3** → Application servers (Node.js + Nginx)
-- 🗄️ **db1** → PostgreSQL database server
-- 📊 **mon1** → Monitoring node
-
-All services communicate over a private Docker network:  
- `ansible-net (100.64.10.0/24)`
+A production-style DevOps lab built using Docker, Ansible, Jenkins, PostgreSQL, Nginx, and Node.js to simulate real-world multi-node infrastructure, deployment automation, and CI/CD workflows.
 
 ---
 
-## ⚙️ Services Breakdown
+# 🏗️ Infrastructure Architecture
 
-### 🧠 Controller
-- Ubuntu 24.04
-- Ansible installed
-- SSH enabled (`devops/devops123`)
-- Central node for automation
+```text
+                    Jenkins
+                       │
+                       ▼
+                 Controller Node
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+        web1         web2         web3
+          │            │            │
+          └────────────┼────────────┘
+                       │
+                       ▼
+                      db1
+                       │
+                       ▼
+                     mon1
+```
 
-### 🌐 Web Nodes (web1, web2, web3)
-- Node.js 22 + Nginx
-- SSH enabled for Ansible management
-- Exposed ports:
-  - web1 → `8083`
-  - web2 → `8084`
-  - web3 → `8086`
-
-### 🗄️ Database (db1)
-- PostgreSQL 16
-- Database: `bankingdb`
-- Auto schema init from `schema.sql`
-- Port: `5432`
-
-### 📊 Monitoring (mon1)
-- Node-based container
-- Reserved for monitoring tools/services
-- SSH enabled
+All containers communicate over a private Docker network.
 
 ---
 
-## 🔐 Default Credentials
+# 🧱 Services
 
-### 👤 Linux Users (All Nodes)
-- Username: `devops`
-- Password: `devops123`
+## 🧠 Controller
 
-### 🗄️ PostgreSQL
-- User: `postgres`
-- Password: `postgres`
+* Ubuntu 24.04
+* Ansible Control Node
+* SSH Enabled
+* Executes Playbooks
+* Manages Infrastructure Automation
 
 ---
 
-## ▶️ Run Project
+## 🌐 Web Nodes (web1, web2, web3)
+
+* Ubuntu + Node.js 22
+* Nginx Reverse Proxy
+* PM2 Process Manager
+* Banking Application Deployment Target
+* SSH Enabled
+
+### Access
+
+* web1 → http://localhost:8083
+* web2 → http://localhost:8084
+* web3 → http://localhost:8086
+
+---
+
+## 🗄️ Database Server (db1)
+
+* PostgreSQL 16
+* SSH Enabled
+* Auto Database Initialization
+* Auto Schema Import
+* Banking Application Database
+
+### Database
+
+* Database Name: bankingdb
+* Port: 5432
+
+### Auto Startup Tasks
+
+Container startup automatically:
+
+* Enables PostgreSQL network access
+* Creates bankingdb
+* Imports schema.sql
+* Creates seed users
+
+---
+
+## 📊 Monitoring Node (mon1)
+
+* Ubuntu-based Monitoring Container
+* Reserved for monitoring stack experiments
+* SSH Enabled
+
+---
+
+# 🔐 Default Credentials
+
+## Linux User
+
+Username:
+
+devops
+
+Password:
+
+devops123
+
+---
+
+## PostgreSQL
+
+Username:
+
+postgres
+
+Password:
+
+postgres
+
+---
+
+# 🏦 Banking Application Deployment
+
+Banking application is deployed using Ansible.
+
+Features:
+
+* User Registration
+* Login Authentication
+* Deposit Money
+* Transfer Funds
+* Transaction History
+* Profile Management
+* Admin User Management
+
+---
+
+# 🤖 Ansible Automation
+
+Playbooks automate:
+
+* Package Installation
+* Application Deployment
+* Nginx Configuration
+* Backend Startup
+* PM2 Process Management
+* Multi-Node Deployment
+
+Example:
 
 ```bash
-docker compose up --build
+ansible-playbook -i inventory.ini deploy-banking.yml
+```
 
-🌍 Access Points
-    • 🧠 Controller → ssh devops@localhost -p 3220
-    • 🌐 Web1 → http://localhost:8083
-    • 🌐 Web2 → http://localhost:8084
-    • 🌐 Web3 → http://localhost:8086
-    • 🗄️ DB → localhost:5432
+---
 
-🎯 Purpose
-This lab is built for hands-on DevOps practice:
-    • ⚙️ Ansible automation
-    • 🧩 Multi-node orchestration
-    • 🚀 Infrastructure as Code (IaC)
-    • 🐳 Docker-based environments
-    • 🔁 Real-world deployment simulation
+# 🔄 Jenkins CI/CD
 
-⚠️ Notes
-    • ❗ SSH password auth enabled only for learning
-    • ❗ Not production secure
-    • ❗ Designed strictly for lab/testing use
+Pipeline automatically:
 
+1. Pulls latest code
+2. Builds infrastructure
+3. Recreates containers
+4. Deploys application
+5. Starts backend services
+6. Verifies deployment
+
+This provides a complete CI/CD workflow for learning DevOps practices.
+
+---
+
+# 🐳 Docker Infrastructure
+
+Managed using Docker Compose.
+
+Start:
+
+```bash
+docker compose up -d --build
+```
+
+Stop:
+
+```bash
+docker compose down
+```
+
+---
+
+# 🎯 Learning Objectives
+
+This lab demonstrates:
+
+* Docker Containerization
+* Multi-Node Infrastructure
+* Ansible Automation
+* PostgreSQL Administration
+* Nginx Reverse Proxy
+* PM2 Process Management
+* CI/CD with Jenkins
+* Infrastructure as Code
+* Full Stack Application Deployment
+* Production-Style DevOps Workflows
+
+---
+
+# ⚠️ Notes
+
+* Designed for learning and portfolio projects.
+* SSH password authentication is enabled for lab convenience.
+* Not intended for production use without additional hardening.
+
+---
+
+# 📜 License
+
+Educational and portfolio project.
