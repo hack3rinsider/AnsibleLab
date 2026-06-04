@@ -46,18 +46,18 @@ stages {
         steps {
 
             sh '''
-if ! docker ps --format "{{.Names}}" | grep -q "^controller$"; then
+            if ! docker ps -a --format "{{.Names}}" | grep -q "^controller$"; then
 
-    echo "Building Infrastructure..."
+                echo "Building Infrastructure..."
 
-    cd AnsibleLab/infrastructure
-    docker compose up -d --build
+                cd AnsibleLab
+                docker compose up -d --build
 
-else
+            else
 
-    echo "Infrastructure already exists"
+                echo "Infrastructure already exists"
 
-fi
+            fi
             '''
 
         }
@@ -91,6 +91,20 @@ fi
             -i /ansible/inventory.ini \
             -m shell \
             -a "curl -s http://localhost/api/"
+            '''
+
+        }
+
+    }
+
+    stage('Copy Ansible Files') {
+
+        steps {
+
+            sh '''
+            docker cp Banking-App/ansible/inventory.ini controller:/ansible/
+            docker cp Banking-App/ansible/deploy-bluegreen.yml controller:/ansible/
+            docker cp Banking-App/ansible/switch-traffic.yml controller:/ansible/
             '''
 
         }
