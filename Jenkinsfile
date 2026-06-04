@@ -89,7 +89,7 @@ stages {
             ansible lb \
             -i /ansible/inventory.ini \
             -m shell \
-            -a "curl -s http://localhost/api/"
+            -a "curl -k -s https://localhost/api/"
             '''
 
         }
@@ -211,7 +211,7 @@ stages {
             ansible lb \
             -i /ansible/inventory.ini \
             -m shell \
-            -a "curl -s http://localhost/api/"
+            -a "curl -k -s https://localhost/api/"
             '''
 
         }
@@ -227,7 +227,7 @@ stages {
             ansible lb \
             -i /ansible/inventory.ini \
             -m shell \
-            -a "for i in 1 2 3 4 5; do curl -s http://localhost/api/; echo; done"
+            -a "for i in 1 2 3 4 5; do curl -k -s https://localhost/api/; echo; done"
             '''
 
         }
