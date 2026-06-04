@@ -8,6 +8,7 @@
       template:
         src: /ansible/templates/nginx.conf.j2
         dest: /etc/nginx/sites-available/default
+        unsafe_writes: true
 
     - name: Reload nginx
       shell: nginx -s reload
