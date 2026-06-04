@@ -1,6 +1,5 @@
 pipeline {
 
-
 agent any
 
 parameters {
@@ -46,18 +45,18 @@ stages {
         steps {
 
             sh '''
-if ! docker ps --format "{{.Names}}" | grep -q "^controller$"; then
+            if ! docker ps --format "{{.Names}}" | grep -q "^controller$"; then
 
-    echo "Building Infrastructure..."
+                echo "Building Infrastructure..."
 
-    cd AnsibleLab/infrastructure
-    docker compose up -d --build
+                cd AnsibleLab/infrastructure
+                docker compose up -d --build
 
-else
+            else
 
-    echo "Infrastructure already exists"
+                echo "Infrastructure already exists"
 
-fi
+            fi
             '''
 
         }
@@ -252,6 +251,5 @@ post {
     }
 
 }
-
 
 }
