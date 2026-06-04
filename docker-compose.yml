@@ -52,6 +52,7 @@ services:
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl
       - ./nginx/default.conf:/etc/nginx/sites-available/default
+      - ./nginx/errors:/usr/share/nginx/html/errors
     networks:
       - ansible-net
 
