@@ -48,7 +48,10 @@ services:
     ports:
       - "3223:22"
       - "8086:80"
-
+      - "8443:443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/default.conf:/etc/nginx/sites-available/default
     networks:
       - ansible-net
 
