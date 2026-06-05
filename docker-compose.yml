@@ -90,6 +90,7 @@ services:
 
 networks:
   ansible-net:
+    name: ansiblelab_ansible-net
     driver: bridge
 
     ipam:
