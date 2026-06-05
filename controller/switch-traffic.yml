@@ -12,3 +12,15 @@
 
     - name: Reload nginx
       shell: nginx -s reload
+
+    - name: Wait for nginx
+      pause:
+        seconds: 3
+
+    - name: Verify active backend
+      shell: curl -k https://localhost/health
+      register: health_check
+
+    - name: Show health check result
+      debug:
+        var: health_check.stdout
