@@ -1,114 +1,0 @@
-Script started on 2026-06-05 17:40:32+05:30 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="102" LINES="27"]
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ^C[?2004l[?2004h[?2004l
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ls
-[?2004l'{'           [0m[01;34mdb[0m                   docker-compose.yml.bak   Jenkinsfile   [01;34mnode[0m        [01;34mtemplates[0m
- [01;34mcontroller[0m   docker-compose.yml   [01;34mgeneric-playbooks[0m        [01;34mnginx[0m         README.md
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ckear
-[?2004lCommand 'ckear' not found, did you mean:
-  command 'clear' from deb ncurses-bin (6.3-2ubuntu0.1)
-Try: sudo apt install <deb name>
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ clear
-[?2004l[H[2J[3J[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ [7m# Stop project containers[27m
-[7mdocker stop controller web1 web2 web3 db1 mon1 2>/dev/null || true[27m
-
-[7m# Remove project containers[27m
-[7mdocker rm -f controller web1 web2 web3 db1 mon1 2>/dev/null || true[27m
-
-[7m# Remove any orphaned project containers[27m
-[7mdocker ps -a --format "{{.Names}}" | \[27m
-[7mgrep -E "(controller|web1|web2|web3|db1|mon1)" | \[27m
-[7mxargs -r docker rm -f[27m
-
-[7m# Remove project network[27m
-[7mdocker network rm ansiblelab_ansible-net 2>/dev/null || true[27m
-[7mdocker network rm infrastructure_ansible-net 2>/dev/null || true[27m
-
-[7m# Verify clean state[27m
-[7mdocker ps -a | grep -E "controller|web1|web2|web3|db1|mon1"[27m
-[7mdocker network ls | grep -E "ansiblelab|infrastructure"[27m[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A# Stop project containers
-docker stop controller web1 web2 web3 db1 mon1 2>/dev/null || true
-
-# Remove project containers
-docker rm -f controller web1 web2 web3 db1 mon1 2>/dev/null || true
-
-# Remove any orphaned project containers
-docker ps -a --format "{{.Names}}" | \
-grep -E "(controller|web1|web2|web3|db1|mon1)" | \
-xargs -r docker rm -f
-
-# Remove project network
-docker network rm ansiblelab_ansible-net 2>/dev/null || true
-docker network rm infrastructure_ansible-net 2>/dev/null || true
-
-# Verify clean state
-docker ps -a | grep -E "controller|web1|web2|web3|db1|mon1"
-docker network ls | grep -E "ansiblelab|infrastructure"
-[?2004lcontroller
-web1
-web2
-web3
-db1
-mon1
-controller
-web1
-web2
-web3
-db1
-mon1
-ansiblelab_ansible-net
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ ls
-[?2004l'{'           [0m[01;34mdb[0m                   docker-compose.yml.bak   Jenkinsfile   [01;34mnode[0m        [01;34mtemplates[0m
- [01;34mcontroller[0m   docker-compose.yml   [01;34mgeneric-playbooks[0m        [01;34mnginx[0m         README.md
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure[00m$ cd controller/
-[?2004l[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure/controller[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure/controller[00m$ ls
-[?2004ldeploy-bluegreen.yml  [0m[01;34mfiles[0m          main_role_playbook.yml  [01;34mroles[0m               [01;34mtemplates[0m
-Dockerfile            inventory.ini  [01;34mplaybooks[0m               switch-traffic.yml  [01;34mvars[0m
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure/controller[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure/controller[00m$ cat ib[Knventory.ini [K
-[?2004l[all]
-controller ansible_host=controller ansible_connection=local
-web1 ansible_host=web1
-web2 ansible_host=web2
-web3 ansible_host=web3
-db1 ansible_host=db1
-mon1 ansible_host=mon1
-
-[blue]
-web1
-
-[green]
-web2
-
-[lb]
-web3
-
-[databases]
-db1
-
-[monitoring]
-mon1
-
-[all:vars]
-ansible_user=devops
-ansible_password=devops123
-ansible_connection=ssh
-ansible_become_password=devops123
-ansible_ssh_common_args="-o StrictHostKeyChecking=no"
-[?2004h]0;psy@psylab: ~/AnsibleLab/infrastructure/controller[01;32mpsy@psylab[00m:[01;34m~/AnsibleLab/infrastructure/controller[00m$ nano inventory.ini 
-[?2004l[?2004h[?1049h[22;0;0t[1;27r(B[m[4l[?7h[39;49m[?1h=[?1h=[?25l[39;49m(B[m[H[2J[25;45H(B[0;7m[ Reading... ](B[m[25;43H(B[0;7m[ Read 29 lines ](B[m[H(B[0;7m  GNU nano 6.2                                 inventory.ini                                          [1;101H(B[m[26d(B[0;7m^G(B[m Help[15G(B[0;7m^O(B[m Write Out  (B[0;7m^W(B[m Where Is   (B[0;7m^K(B[m Cut[26;57H(B[0;7m^T(B[m Execute    (B[0;7m^C(B[m Location   (B[0;7mM-U(B[m Undo[27d(B[0;7m^X(B[m Exit[15G(B[0;7m^R(B[m Read File  (B[0;7m^\(B[m Replace    (B[0;7m^U(B[m Paste[57G(B[0;7m^J(B[m Justify    (B[0;7m^/(B[m Go To Line (B[0;7mM-E(B[m Redo[2d(B[0;1m[32m[all][3d[39m(B[mcontroller ansible_host=controller ansible_connection=local[4dweb1 ansible_host=web1[5dweb2 ansible_host=web2[6dweb3 ansible_host=web3[7ddb1 ansible_host=db1[8dmon1 ansible_host=mon1[10d(B[0;1m[32m[blue][11d[39m(B[mweb1[13d(B[0;1m[32m[green][14d[39m(B[mweb2[16d(B[0;1m[32m[lb][17d[39m(B[mweb3[19d(B[0;1m[32m[databases][20d[39m(B[mdb1[22d(B

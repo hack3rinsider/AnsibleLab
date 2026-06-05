@@ -11,8 +11,7 @@ services:
       - "3220:22"
 
     volumes:
-      - ./controller:/ansible
-
+      - ${WORKSPACE_PATH}/controller:/ansible
     networks:
       - ansible-net
 
@@ -50,9 +49,9 @@ services:
       - "8086:80"
       - "8443:443"
     volumes:
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./nginx/default.conf:/etc/nginx/sites-available/default
-      - ./nginx/errors:/usr/share/nginx/html/errors
+      - ${WORKSPACE_PATH}/nginx/ssl:/etc/nginx/ssl
+      - ${WORKSPACE_PATH}/nginx/default.conf:/etc/nginx/sites-available/default
+      - ${WORKSPACE_PATH}/nginx/errors:/usr/share/nginx/html/errors
     networks:
       - ansible-net
 
