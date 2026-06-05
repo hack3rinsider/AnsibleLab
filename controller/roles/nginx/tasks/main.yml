@@ -1,0 +1,13 @@
+---
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Deploy index file
+  copy:
+    src: index.html
+    dest: /var/www/html/index.html
+  notify:
+    - Restart nginx---
+# tasks file for roles/nginx

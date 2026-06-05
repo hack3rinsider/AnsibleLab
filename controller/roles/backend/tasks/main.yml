@@ -1,0 +1,10 @@
+---
+- name: Install nodejs dependencies
+  shell: npm install
+  args:
+    chdir: /opt/backend
+
+- name: Start backend app
+  shell: pm2 start server.js --name banking-backend
+  args:
+    chdir: /opt/backend
