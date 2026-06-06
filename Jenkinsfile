@@ -5,251 +5,322 @@ agent any
 parameters {
 
     choice(
-        name: 'TARGET_ENV',
-        choices: ['BLUE', 'GREEN'],
-        description: 'Environment to deploy'
+        name: 'ACTION',
+        choices: [
+            'SETUP_INFRA',
+            'DEPLOY_BLUE',
+            'DEPLOY_GREEN',
+            'SWITCH_BLUE',
+            'SWITCH_GREEN',
+            'ROLLBACK'
+        ],
+        description: 'Select Action'
     )
+}
 
+environment {
+    WORKSPACE_PATH = "/home/psy/Jenkins/Main/workspace/${JOB_NAME}/AnsibleLab"
 }
 
 stages {
 
     stage('Checkout AnsibleLab') {
-
         steps {
-
             dir('AnsibleLab') {
-                git branch: 'main',
+                git(
+                    branch: 'main',
                     url: 'https://github.com/hack3rinsider/AnsibleLab.git'
+                )
             }
-
         }
-
     }
 
     stage('Checkout Banking-App') {
-
         steps {
-
             dir('Banking-App') {
-                git branch: 'main',
+                git(
+                    branch: 'main',
                     url: 'https://github.com/hack3rinsider/Banking-App.git'
+                )
             }
-
         }
-
     }
 
-    stage('Build Infrastructure If Missing') {
+    stage('Set Variables') {
+        steps {
+            script {
+
+                if (params.ACTION == 'DEPLOY_BLUE' || params.ACTION == 'SWITCH_BLUE') {
+
+                    env.ANSIBLE_TARGET = 'blue'
+                    env.BACKEND_TARGET = 'web1'
+                    env.PREVIOUS_ENV = 'web2'
+                    env.HEALTH_HOST = 'web1'
+                }
+
+                if (params.ACTION == 'DEPLOY_GREEN' || params.ACTION == 'SWITCH_GREEN') {
+
+                    env.ANSIBLE_TARGET = 'green'
+                    env.BACKEND_TARGET = 'web2'
+                    env.PREVIOUS_ENV = 'web1'
+                    env.HEALTH_HOST = 'web2'
+                }
+            }
+        }
+    }
+
+    stage('Setup Infrastructure') {
+
+        when {
+            expression {
+                params.ACTION == 'SETUP_INFRA'
+            }
+        }
 
         steps {
 
             sh '''
-            if ! docker ps --format "{{.Names}}" | grep -q "^controller$"; then
+            cd AnsibleLab
 
-                echo "Building Infrastructure..."
+            docker compose down || true
 
-                cd AnsibleLab/infrastructure
-                docker compose up -d --build
+            docker compose up -d --build
 
-            else
-
-                echo "Infrastructure already exists"
-
-            fi
+            sleep 20
             '''
-
         }
-
     }
 
     stage('Verify Infrastructure') {
 
+        when {
+            expression {
+                params.ACTION == 'SETUP_INFRA'
+            }
+        }
+
         steps {
 
             sh '''
+            docker ps
+
+            docker exec controller ls -la /ansible
+
             docker exec controller \
             ansible all \
             -i /ansible/inventory.ini \
             -m ping
             '''
-
         }
-
     }
 
-    stage('Current Production Environment') {
+    stage('Deploy Environment') {
+
+        when {
+            expression {
+                params.ACTION == 'DEPLOY_BLUE' ||
+                params.ACTION == 'DEPLOY_GREEN'
+            }
+        }
 
         steps {
 
             sh '''
-            echo "===== CURRENT PRODUCTION ====="
-
             docker exec controller \
-            ansible lb \
+            ansible-playbook \
             -i /ansible/inventory.ini \
-            -m shell \
-            -a "curl -k -s https://localhost/api/"
+            /ansible/deploy-bluegreen.yml \
+            -e target_env=${ANSIBLE_TARGET}
             '''
-
         }
-
     }
 
-    stage('Deploy Selected Environment') {
+    stage('Health Check') {
+
+        when {
+            expression {
+                params.ACTION == 'DEPLOY_BLUE' ||
+                params.ACTION == 'DEPLOY_GREEN'
+            }
+        }
+
+        steps {
+
+            sh '''
+            docker exec controller \
+            sshpass -p devops123 \
+            ssh \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            devops@${HEALTH_HOST} \
+            "curl http://localhost:3000/health"
+            '''
+        }
+    }
+
+    stage('Manual Approval') {
+
+        when {
+            expression {
+                params.ACTION == 'DEPLOY_BLUE' ||
+                params.ACTION == 'DEPLOY_GREEN'
+            }
+        }
+
+        steps {
+
+            input(
+                message: "Switch traffic to ${BACKEND_TARGET} ?",
+                ok: "Switch Traffic"
+            )
+        }
+    }
+
+    stage('Switch Traffic') {
+
+        when {
+            expression {
+                params.ACTION == 'DEPLOY_BLUE' ||
+                params.ACTION == 'DEPLOY_GREEN' ||
+                params.ACTION == 'SWITCH_BLUE' ||
+                params.ACTION == 'SWITCH_GREEN'
+            }
+        }
+
+        steps {
+
+            sh '''
+            docker exec controller \
+            ansible-playbook \
+            -i /ansible/inventory.ini \
+            /ansible/switch-traffic.yml \
+            -e backend_target=${BACKEND_TARGET}
+
+            mkdir -p AnsibleLab/controller/vars
+
+            cat > AnsibleLab/controller/vars/active_env.yml << EOF
+
+active_env: ${BACKEND_TARGET}
+previous_env: ${PREVIOUS_ENV}
+EOF
+'''
+}
+}
+
+    stage('Rollback Traffic') {
+
+        when {
+            expression {
+                params.ACTION == 'ROLLBACK'
+            }
+        }
 
         steps {
 
             script {
 
-                def deployGroup =
-                    params.TARGET_ENV == 'BLUE'
-                    ? 'blue'
-                    : 'green'
+                def ACTIVE_ENV = sh(
+                    script: "grep active_env AnsibleLab/controller/vars/active_env.yml | awk '{print \$2}'",
+                    returnStdout: true
+                ).trim()
+
+                def PREVIOUS_ENV = sh(
+                    script: "grep previous_env AnsibleLab/controller/vars/active_env.yml | awk '{print \$2}'",
+                    returnStdout: true
+                ).trim()
+
+                echo "ACTIVE_ENV=${ACTIVE_ENV}"
+                echo "PREVIOUS_ENV=${PREVIOUS_ENV}"
 
                 sh """
                 docker exec controller \
                 ansible-playbook \
                 -i /ansible/inventory.ini \
-                -e target_env=${deployGroup} \
-                /ansible/deploy-bluegreen.yml
+                /ansible/switch-traffic.yml \
+                -e backend_target=${PREVIOUS_ENV}
                 """
 
+                writeFile(
+                    file: 'AnsibleLab/controller/vars/active_env.yml',
+                    text: """active_env: ${PREVIOUS_ENV}
+
+previous_env: ${ACTIVE_ENV}
+"""
+                )
             }
-
         }
-
     }
 
-    stage('Health Check Target Environment') {
+    stage('Verify Production') {
+
+        when {
+            expression {
+                params.ACTION != 'SETUP_INFRA'
+            }
+        }
 
         steps {
 
-            script {
+            sh '''
+            echo "===== ACTIVE ENV ====="
 
-                if (params.TARGET_ENV == 'BLUE') {
+            cat AnsibleLab/controller/vars/active_env.yml || true
 
-                    sh '''
-                    docker exec controller \
-                    ansible blue \
-                    -i /ansible/inventory.ini \
-                    -m shell \
-                    -a "curl -s http://localhost:3000"
-                    '''
+            echo
+            echo "===== NGINX CONFIG ====="
 
-                } else {
+            docker exec web3 \
+            cat /etc/nginx/sites-available/default || true
 
-                    sh '''
-                    docker exec controller \
-                    ansible green \
-                    -i /ansible/inventory.ini \
-                    -m shell \
-                    -a "curl -s http://localhost:3000"
-                    '''
+            echo
+            echo "===== PRODUCTION HEALTH ====="
 
-                }
-
-            }
-
+            docker exec web3 \
+            curl -sk https://localhost/api/
+            '''
         }
-
     }
 
     stage('Deployment Summary') {
 
         steps {
 
-            echo "Target Deployment Environment: ${params.TARGET_ENV}"
-
-        }
-
-    }
-
-    stage('Manual Approval') {
-
-        steps {
-
-            input message: "Switch production traffic to ${params.TARGET_ENV} ?"
-
-        }
-
-    }
-
-    stage('Blue Green Traffic Switch') {
-
-        steps {
-
-            script {
-
-                def backendTarget =
-                    params.TARGET_ENV == 'BLUE'
-                    ? 'web1'
-                    : 'web2'
-
-                sh """
-                docker exec controller \
-                ansible-playbook \
-                -i /ansible/inventory.ini \
-                -e backend_target=${backendTarget} \
-                /ansible/switch-traffic.yml
-                """
-
-            }
-
-        }
-
-    }
-
-    stage('Verify Active Production') {
-
-        steps {
-
             sh '''
-            echo "===== ACTIVE PRODUCTION ====="
+            docker ps
 
-            docker exec controller \
-            ansible lb \
-            -i /ansible/inventory.ini \
-            -m shell \
-            -a "curl -k -s https://localhost/api/"
+            echo
+            echo "===== WEB1 ====="
+            docker exec web1 pm2 list || true
+
+            echo
+            echo "===== WEB2 ====="
+            docker exec web2 pm2 list || true
             '''
-
         }
-
     }
-
-    stage('Zero Downtime Verification') {
-
-        steps {
-
-            sh '''
-            docker exec controller \
-            ansible lb \
-            -i /ansible/inventory.ini \
-            -m shell \
-            -a "for i in 1 2 3 4 5; do curl -k -s https://localhost/api/; echo; done"
-            '''
-
-        }
-
-    }
-
 }
 
 post {
 
     success {
 
-        echo 'BLUE-GREEN deployment completed successfully'
-
+        echo 'Blue Green Deployment Successful'
     }
 
     failure {
 
-        echo 'Deployment failed'
-
+        echo 'Blue Green Deployment Failed'
     }
 
+    always {
+
+        sh '''
+        echo
+        echo "===== FINAL STATUS ====="
+
+        docker ps -a
+        '''
+    }
 }
 
 }
