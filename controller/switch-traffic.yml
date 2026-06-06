@@ -18,9 +18,16 @@
         seconds: 3
 
     - name: Verify active backend
-      shell: curl -k https://localhost/health
+      shell: curl -sk https://localhost/api/
       register: health_check
 
     - name: Show health check result
       debug:
         var: health_check.stdout
+
+    - name: Fail if backend is not responding correctly
+      fail:
+        msg: "Traffic switch failed. Backend response invalid."
+      when:
+        - "'BLUE' not in health_check.stdout"
+        - "'GREEN' not in health_check.stdout"
